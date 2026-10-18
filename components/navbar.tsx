@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Search } from "lucide-react";
 import { AUTH_UI_ENABLED } from "@/lib/features";
 import { NAV_ITEMS } from "@/lib/nav";
 import { NavLinks } from "./nav-links";
 import { Logo } from "./logo";
+import { SearchBox } from "./search-box";
 
 export function Navbar() {
   return (
@@ -30,18 +30,7 @@ export function Navbar() {
           <NavLinks />
         </Suspense>
 
-        <form action="/search" className="ml-auto flex w-full max-w-xs items-center">
-          <label className="group relative w-full">
-            <span className="sr-only">Search</span>
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted transition group-focus-within:text-foreground" />
-            <input
-              type="search"
-              name="q"
-              placeholder="Search titles…"
-              className="h-10 w-full rounded-full border border-border bg-surface/80 pr-4 pl-9 text-sm placeholder:text-muted focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:outline-none"
-            />
-          </label>
-        </form>
+        <SearchBox />
 
         {AUTH_UI_ENABLED && (
           <Link
