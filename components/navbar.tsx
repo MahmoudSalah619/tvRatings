@@ -9,7 +9,7 @@ import { SearchBox } from "./search-box";
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-background/70 backdrop-blur-xl">
-      <nav className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+      <nav className="mx-auto flex h-16 max-w-7xl 2xl:max-w-[100rem] items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="shrink-0" aria-label="Reel Ratings home">
           <Logo />
         </Link>

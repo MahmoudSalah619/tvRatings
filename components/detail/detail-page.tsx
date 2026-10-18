@@ -28,7 +28,7 @@ export async function DetailContent({ type, id }: { type: MediaType; id: number 
   return (
     <>
       <DetailHero media={media} />
-      <div className="mx-auto max-w-7xl space-y-16 px-4 sm:px-6">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[100rem] space-y-16 px-4 sm:px-6">
         {type === "tv" && seasonNumbers.length > 0 && (
           <section id="episodes" className="scroll-mt-24">
             <div className="mb-6">

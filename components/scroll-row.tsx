@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /** Horizontal snap-scrolling row with desktop arrow buttons. */
-export function ScrollRow({ children, itemClassName = "w-36 sm:w-44" }: { children: React.ReactNode[]; itemClassName?: string }) {
+export function ScrollRow({ children, itemClassName = "w-36 sm:w-44 2xl:w-48" }: { children: React.ReactNode[]; itemClassName?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = (dir: 1 | -1) => {
     const el = ref.current;

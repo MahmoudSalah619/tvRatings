@@ -67,7 +67,7 @@ async function PersonContent({ id }: { id: number }) {
   facts.push(["Credits", String(person.credits.length)]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-16 px-4 pt-10 sm:px-6">
+    <div className="mx-auto max-w-7xl 2xl:max-w-[100rem] space-y-16 px-4 pt-10 sm:px-6">
       <header className="grid gap-8 md:grid-cols-[260px_1fr]">
         <div className="relative mx-auto aspect-[2/3] w-48 overflow-hidden rounded-2xl bg-surface-2 shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-60 md:w-full">
           {photo ? (
@@ -122,7 +122,7 @@ async function PersonContent({ id }: { id: number }) {
 
 function PersonSkeleton() {
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 pt-10 sm:px-6 md:grid-cols-[260px_1fr]">
+    <div className="mx-auto grid max-w-7xl 2xl:max-w-[100rem] gap-8 px-4 pt-10 sm:px-6 md:grid-cols-[260px_1fr]">
       <div className="skeleton mx-auto aspect-[2/3] w-48 rounded-2xl sm:w-60 md:w-full" />
       <div className="space-y-4">
         <div className="skeleton h-16 w-2/3 rounded-xl" />

@@ -132,7 +132,7 @@ export function BrowseHeader({ title, subtitle }: { title: string; subtitle: str
   return (
     <header className="relative overflow-hidden border-b border-white/5">
       <div className="pointer-events-none absolute -top-40 left-1/2 h-80 w-[48rem] -translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
-      <div className="relative mx-auto max-w-7xl px-4 pt-14 pb-10 sm:px-6">
+      <div className="relative mx-auto max-w-7xl 2xl:max-w-[100rem] px-4 pt-14 pb-10 sm:px-6">
         <h1 className="font-display text-5xl tracking-tight sm:text-6xl">{title}</h1>
         <p className="mt-2 text-foreground/70">{subtitle}</p>
       </div>

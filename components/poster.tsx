@@ -64,10 +64,23 @@ export function Backdrop({
   className?: string;
   priority?: boolean;
 }) {
-  const src = imageUrl(path, "w1280");
   const h = hueFor(id);
-  if (src) {
-    return <Image src={src} alt="" fill loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} sizes="100vw" className={`object-cover ${className}`} />;
+  if (path) {
+    // TMDb only offers a few backdrop widths, so pick among them with srcSet: w1280 is
+    // visibly soft on 1440p+ and high-DPI screens, where the original file is used.
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imageUrl(path, "w1280")!}
+        srcSet={`${imageUrl(path, "w780")} 780w, ${imageUrl(path, "w1280")} 1280w, ${imageUrl(path, "original")} 3840w`}
+        sizes="100vw"
+        alt=""
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+        className={`absolute inset-0 size-full object-cover ${className}`}
+      />
+    );
   }
   return (
     <div

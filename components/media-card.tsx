@@ -39,7 +39,7 @@ export function MediaCardSkeleton() {
 
 export function MediaGrid({ items }: { items: MediaSummary[] }) {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
       {items.map((item, i) => (
         <MediaCard key={`${item.mediaType}-${item.id}`} item={item} priority={i < 6} />
       ))}
@@ -49,7 +49,7 @@ export function MediaGrid({ items }: { items: MediaSummary[] }) {
 
 export function MediaGridSkeleton({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
       {Array.from({ length: count }, (_, i) => (
         <MediaCardSkeleton key={i} />
       ))}

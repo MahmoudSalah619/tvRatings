@@ -25,7 +25,7 @@ export default function Home() {
         <HeroSection />
       </Suspense>
 
-      <div className="mx-auto max-w-7xl space-y-16 px-4 sm:px-6">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[100rem] space-y-16 px-4 sm:px-6">
         <Suspense fallback={<div className="grid h-48 gap-4 md:grid-cols-3" />}>
           <CategoryTiles />
         </Suspense>

@@ -19,7 +19,7 @@ export default function ComparePage({ searchParams }: PageProps<"/compare">) {
   return (
     <>
       <BrowseHeader title="Compare shows" subtitle="Put two series side by side, season by season and episode by episode." />
-      <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[100rem] px-4 pt-8 sm:px-6">
         <Suspense fallback={<div className="skeleton h-96 rounded-2xl" />}>
           {searchParams.then((sp) => (
             <Comparison sp={sp} />

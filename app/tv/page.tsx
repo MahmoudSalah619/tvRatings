@@ -8,7 +8,7 @@ export default function TvShowsPage({ searchParams }: PageProps<"/tv">) {
   return (
     <>
       <BrowseHeader title="TV Shows" subtitle="Every series, with a rating graph for every episode." />
-      <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[100rem] px-4 pt-8 sm:px-6">
         <Suspense fallback={<BrowseSkeleton />}>
           {searchParams.then((sp) => (
             <BrowseResults base="/tv" state={{ ...parseBrowse(sp, "tv"), type: "tv" }} />

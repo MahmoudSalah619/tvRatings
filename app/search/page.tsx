@@ -13,7 +13,7 @@ function one(v: string | string[] | undefined) {
 
 export default function SearchPage({ searchParams }: PageProps<"/search">) {
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-12 sm:px-6">
+    <div className="mx-auto max-w-7xl 2xl:max-w-[100rem] px-4 pt-12 sm:px-6">
       <Suspense fallback={<MediaGridSkeleton />}>
         {searchParams.then((sp) => (
           <SearchResults sp={sp} />

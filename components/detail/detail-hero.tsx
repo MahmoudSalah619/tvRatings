@@ -28,7 +28,7 @@ export function DetailHero({ media }: { media: MediaDetails }) {
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-background via-background/80 to-background/30" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-background/90 to-transparent" />
 
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 pt-10 pb-12 sm:px-6 md:grid-cols-[260px_1fr] md:pt-20 lg:grid-cols-[300px_1fr]">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[100rem] gap-8 px-4 pt-10 pb-12 sm:px-6 md:grid-cols-[260px_1fr] md:pt-20 lg:grid-cols-[300px_1fr]">
         <Poster
           id={media.id}
           title={media.title}
@@ -108,7 +108,7 @@ export function DetailHero({ media }: { media: MediaDetails }) {
 
 export function DetailSkeleton() {
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 pt-10 pb-12 sm:px-6 md:grid-cols-[260px_1fr] md:pt-20 lg:grid-cols-[300px_1fr]">
+    <div className="mx-auto grid max-w-7xl 2xl:max-w-[100rem] gap-8 px-4 pt-10 pb-12 sm:px-6 md:grid-cols-[260px_1fr] md:pt-20 lg:grid-cols-[300px_1fr]">
       <div className="skeleton mx-auto aspect-[2/3] w-48 rounded-xl sm:w-60 md:w-full" />
       <div className="space-y-4 self-end">
         <div className="skeleton h-4 w-48 rounded" />

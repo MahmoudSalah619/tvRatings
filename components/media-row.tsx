@@ -58,7 +58,7 @@ export function MediaRowSkeleton({ title }: { title: string }) {
       <SectionHeading title={title} />
       <div className="flex gap-4 overflow-hidden">
         {Array.from({ length: 7 }, (_, i) => (
-          <div key={i} className="w-36 shrink-0 sm:w-44">
+          <div key={i} className="w-36 shrink-0 sm:w-44 2xl:w-48">
             <MediaCardSkeleton />
           </div>
         ))}

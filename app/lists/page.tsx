@@ -12,7 +12,7 @@ export default function ListsPage() {
   return (
     <>
       <BrowseHeader title="Curated lists" subtitle="Rankings built from millions of TMDb ratings and episode-by-episode data." />
-      <div className="mx-auto grid max-w-7xl gap-5 px-4 pt-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[100rem] gap-5 px-4 pt-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
         {CURATED_LISTS.map((list) => (
           <Suspense key={list.slug} fallback={<div className="skeleton h-64 rounded-3xl" />}>
             <ListCard list={list} />

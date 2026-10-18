@@ -8,7 +8,7 @@ export default function AnimePage({ searchParams }: PageProps<"/anime">) {
   return (
     <>
       <BrowseHeader title="Anime" subtitle="Japanese animated series and films, rated episode by episode." />
-      <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[100rem] px-4 pt-8 sm:px-6">
         <Suspense fallback={<BrowseSkeleton />}>
           {searchParams.then((sp) => (
             <BrowseResults base="/anime" state={parseBrowse(sp, "tv")} anime showTypeToggle />

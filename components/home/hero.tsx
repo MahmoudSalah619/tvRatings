@@ -26,7 +26,7 @@ export function Hero({ items }: { items: MediaSummary[] }) {
 
   return (
     <section
-      className="relative isolate -mt-16 flex min-h-[640px] items-end overflow-hidden pt-16 sm:min-h-[720px] lg:h-[88vh]"
+      className="relative isolate -mt-16 flex min-h-[640px] items-end overflow-hidden pt-16 sm:min-h-[720px] lg:h-[88vh] 2xl:h-[92vh] 2xl:max-h-[1100px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -35,16 +35,17 @@ export function Hero({ items }: { items: MediaSummary[] }) {
         <Backdrop id={current.id} title={current.title} path={current.backdropPath} priority />
       </div>
       {/* Scrims only where text sits (left + bottom) so the artwork stays visible */}
-      <div className="absolute inset-x-0 top-0 -z-10 h-28 bg-gradient-to-b from-background/70 to-transparent" />
-      <div className="absolute inset-y-0 left-0 -z-10 w-full bg-gradient-to-r from-background/85 via-background/25 to-transparent sm:w-3/4" />
-      <div className="absolute inset-x-0 bottom-0 -z-10 h-[55%] bg-gradient-to-t from-background via-background/50 to-transparent" />
+      <div className="absolute inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-background/60 to-transparent" />
+      <div className="absolute inset-y-0 left-0 -z-10 w-full bg-gradient-to-r from-background/75 via-background/15 to-transparent sm:w-2/3 2xl:w-1/2" />
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-[42%] bg-gradient-to-t from-background via-background/35 to-transparent" />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 sm:pb-20">
-        <div key={`copy-${current.mediaType}-${current.id}`} className="max-w-2xl">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 sm:pb-20 2xl:max-w-[100rem] 2xl:pb-24">
+        {/* Soft shadow keeps text legible now that the scrims are lighter */}
+        <div key={`copy-${current.mediaType}-${current.id}`} className="max-w-2xl [text-shadow:0_2px_20px_rgb(0_0_0/0.55)] 2xl:max-w-3xl">
           <p className="animate-fade-up text-xs font-medium tracking-[0.25em] text-accent uppercase">
             #{index + 1} Trending this week
           </p>
-          <h1 className="mt-3 animate-fade-up font-display text-5xl leading-[0.95] tracking-tight text-balance [animation-delay:80ms] sm:text-7xl lg:text-8xl">
+          <h1 className="mt-3 animate-fade-up font-display text-5xl leading-[0.95] tracking-tight text-balance [animation-delay:80ms] sm:text-7xl lg:text-8xl 2xl:text-9xl">
             {current.title}
           </h1>
           <div className="mt-5 flex animate-fade-up flex-wrap items-center gap-2 text-sm text-foreground/80 [animation-delay:160ms]">
@@ -58,7 +59,7 @@ export function Hero({ items }: { items: MediaSummary[] }) {
               </span>
             ))}
           </div>
-          <p className="mt-5 line-clamp-3 max-w-xl animate-fade-up text-base text-foreground/75 [animation-delay:240ms] sm:text-lg">
+          <p className="mt-5 line-clamp-3 max-w-xl animate-fade-up text-base text-foreground/85 [animation-delay:240ms] sm:text-lg 2xl:max-w-2xl 2xl:text-xl">
             {current.overview}
           </p>
           <div className="mt-8 flex animate-fade-up flex-wrap gap-3 [animation-delay:320ms]">
