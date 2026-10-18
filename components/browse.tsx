@@ -93,6 +93,41 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
   );
 }
 
+function Segmented<K extends string>({
+  items,
+  active,
+  accent = false,
+}: {
+  items: { key: K; label: string; href: string }[];
+  active: K;
+  accent?: boolean;
+}) {
+  return (
+    <div className="flex rounded-full border border-border bg-background/60 p-1">
+      {items.map((item) => {
+        const on = item.key === active;
+        return (
+          <Link
+            key={item.key}
+            href={item.href}
+            scroll={false}
+            aria-current={on ? "page" : undefined}
+            className={`rounded-full px-3.5 py-1 text-sm transition ${
+              on
+                ? accent
+                  ? "bg-accent font-medium text-background"
+                  : "bg-foreground font-medium text-background"
+                : "text-foreground/70 hover:text-foreground"
+            }`}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 export function BrowseHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <header className="relative overflow-hidden border-b border-white/5">
@@ -134,28 +169,51 @@ export async function BrowseResults({
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          {showTypeToggle && (
-            <div className="mr-2 flex rounded-full border border-border p-1">
-              {(["tv", "movie"] as const).map((t) => (
-                <Link
-                  key={t}
-                  href={buildHref(base, state, { type: t, genre: undefined, page: 1 }, true)}
-                  scroll={false}
-                  className={`rounded-full px-3.5 py-1 text-sm ${state.type === t ? "bg-accent font-medium text-background" : "text-foreground/70"}`}
-                >
-                  {t === "tv" ? "Series" : "Films"}
-                </Link>
-              ))}
+      <div className="space-y-4">
+        {/* Toolbar: what to show and how to sort, then refining filters */}
+        <div className="rounded-2xl border border-border bg-surface/60">
+          <div className="flex flex-wrap items-center gap-3 p-3">
+            {showTypeToggle && (
+              <Segmented
+                items={(["tv", "movie"] as const).map((t) => ({
+                  key: t,
+                  label: t === "tv" ? "Series" : "Films",
+                  href: buildHref(base, state, { type: t, genre: undefined, runtime: undefined, page: 1 }, true),
+                }))}
+                active={state.type}
+                accent
+              />
+            )}
+            <div className="flex items-center gap-2">
+              <span className="hidden text-sm text-muted sm:inline">Sort by</span>
+              <Segmented
+                items={SORTS.map((s) => ({
+                  key: s.key,
+                  label: s.label,
+                  href: buildHref(base, state, { sort: s.key, page: 1 }, showTypeToggle),
+                }))}
+                active={state.sort}
+              />
             </div>
-          )}
-          {SORTS.map((s) => (
-            <Chip key={s.key} href={buildHref(base, state, { sort: s.key, page: 1 }, showTypeToggle)} active={state.sort === s.key}>
-              {s.label}
-            </Chip>
-          ))}
+            <span className="ml-auto text-sm text-muted tabular-nums">
+              {data.totalResults.toLocaleString("en-US")} {data.totalResults === 1 ? "title" : "titles"}
+            </span>
+          </div>
+          <div className="border-t border-white/5 p-3">
+            <AdvancedFilters
+              type={state.type}
+              showLanguage={!anime}
+              values={{
+                from: state.yearFrom,
+                to: state.yearTo,
+                rating: state.minRating,
+                runtime: state.runtime,
+                lang: state.language,
+              }}
+            />
+          </div>
         </div>
+
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
           <Chip href={buildHref(base, state, { genre: undefined, page: 1 }, showTypeToggle)} active={!state.genre}>
             All genres
@@ -166,18 +224,6 @@ export async function BrowseResults({
             </Chip>
           ))}
         </div>
-        <AdvancedFilters
-          type={state.type}
-          showLanguage={!anime}
-          values={{
-            from: state.yearFrom,
-            to: state.yearTo,
-            rating: state.minRating,
-            runtime: state.runtime,
-            lang: state.language,
-          }}
-          totalResults={data.totalResults}
-        />
       </div>
 
       {data.results.length === 0 ? (
