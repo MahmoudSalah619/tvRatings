@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Reel Ratings
 
-## Getting Started
+Ratings and reviews for movies, TV series and anime, powered by the [TMDb API](https://developer.themoviedb.org/).
+TV series and anime get a color-coded, episode-by-episode rating grid.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
+cp .env.local.example .env.local   # then fill in the values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### TMDb
+Without credentials the site runs in **demo mode** with a small set of sample titles.
+Create a free account at themoviedb.org → Settings → API, then copy the **API Read Access Token**
+into `TMDB_TOKEN` in `.env.local` and restart the dev server.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Authentication (hidden)
+Auth uses Supabase and is wired up but hidden from the UI:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Routes `/login`, `/signup`, `/account` work but aren't linked anywhere (and are `noindex`).
+- Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to `.env.local`.
+- Apply the schema in `supabase/migrations/0001_init.sql` (profiles, reviews, episode ratings, with RLS).
+- Set `NEXT_PUBLIC_AUTH_UI=true` to show the Sign in button and the community reviews section on title pages.
+  When you do, widen the matcher in `proxy.ts` so sessions refresh on every page.
 
-## Learn More
+## Structure
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `lib/tmdb/` – TMDb client, cached API functions (`"use cache"`), demo data
+- `lib/rating.ts` – rating tiers (Absolute Cinema → Garbage) used by the episode grid
+- `components/episode-grid.tsx` – the per-episode ratings grid
+- `app/` – home, `/movies`, `/tv`, `/anime`, `/search`, `/movie/[id]`, `/tv/[id]`, auth routes
