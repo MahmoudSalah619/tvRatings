@@ -86,3 +86,44 @@ export interface SeasonRatings {
   name: string;
   episodes: Episode[];
 }
+
+export interface SeasonDetails extends SeasonRatings {
+  overview: string;
+  airDate: string | null;
+  posterPath: string | null;
+}
+
+export interface Provider {
+  id: number;
+  name: string;
+  logoPath: string | null;
+}
+
+export interface RegionProviders {
+  link: string;
+  stream: Provider[];
+  free: Provider[];
+  rent: Provider[];
+  buy: Provider[];
+}
+
+/** Keyed by ISO 3166-1 country code. */
+export type WatchProviders = Record<string, RegionProviders>;
+
+export interface PersonCredit extends MediaSummary {
+  role: string; // character or job
+  department: "Acting" | string;
+}
+
+export interface PersonDetails {
+  id: number;
+  name: string;
+  biography: string;
+  profilePath: string | null;
+  knownFor: string;
+  birthday: string | null;
+  deathday: string | null;
+  placeOfBirth: string | null;
+  imdbId: string | null;
+  credits: PersonCredit[];
+}

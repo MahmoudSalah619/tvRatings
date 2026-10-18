@@ -27,7 +27,7 @@ export function Poster({
   return (
     <div className={`relative aspect-[2/3] overflow-hidden rounded-xl bg-surface-2 ${className}`}>
       {src ? (
-        <Image src={src} alt={title} fill sizes={sizes} priority={priority} className="object-cover" />
+        <Image src={src} alt={title} fill sizes={sizes} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} className="object-cover" />
       ) : (
         <PosterPlaceholder id={id} title={title} />
       )}
@@ -67,7 +67,7 @@ export function Backdrop({
   const src = imageUrl(path, "w1280");
   const h = hueFor(id);
   if (src) {
-    return <Image src={src} alt="" fill priority={priority} sizes="100vw" className={`object-cover ${className}`} />;
+    return <Image src={src} alt="" fill loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} sizes="100vw" className={`object-cover ${className}`} />;
   }
   return (
     <div

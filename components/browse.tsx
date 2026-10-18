@@ -4,6 +4,7 @@ import { discover, type SortKey } from "@/lib/tmdb/api";
 import { genresFor } from "@/lib/tmdb/genres";
 import type { MediaType } from "@/lib/tmdb/types";
 import { MediaGrid, MediaGridSkeleton } from "./media-card";
+import { AdvancedFilters, type RuntimeKey } from "./advanced-filters";
 
 export type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -22,7 +23,23 @@ export interface BrowseState {
   sort: SortKey;
   genre?: number;
   page: number;
+  yearFrom?: number;
+  yearTo?: number;
+  minRating?: number;
+  runtime?: RuntimeKey;
+  language?: string;
 }
+
+function int(v: string | string[] | undefined, min: number, max: number): number | undefined {
+  const n = Number.parseInt(one(v) ?? "", 10);
+  return Number.isFinite(n) && n >= min && n <= max ? n : undefined;
+}
+
+/** Runtime buckets in minutes; TV uses per-episode length. */
+const RUNTIMES: Record<MediaType, Record<RuntimeKey, [number?, number?]>> = {
+  movie: { short: [undefined, 89], medium: [90, 150], long: [151, undefined] },
+  tv: { short: [undefined, 29], medium: [30, 60], long: [61, undefined] },
+};
 
 export function parseBrowse(sp: SearchParams, defaultType: MediaType): BrowseState {
   const sortRaw = one(sp.sort);
@@ -31,7 +48,19 @@ export function parseBrowse(sp: SearchParams, defaultType: MediaType): BrowseSta
   const page = Math.min(500, Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1));
   const typeRaw = one(sp.type);
   const type: MediaType = typeRaw === "movie" || typeRaw === "tv" ? typeRaw : defaultType;
-  return { type, sort, genre: Number.isFinite(genre) ? genre : undefined, page };
+  const runtimeRaw = one(sp.runtime);
+  const languageRaw = one(sp.lang);
+  return {
+    type,
+    sort,
+    genre: Number.isFinite(genre) ? genre : undefined,
+    page,
+    yearFrom: int(sp.from, 1900, 2100),
+    yearTo: int(sp.to, 1900, 2100),
+    minRating: int(sp.rating, 1, 9),
+    runtime: runtimeRaw === "short" || runtimeRaw === "medium" || runtimeRaw === "long" ? runtimeRaw : undefined,
+    language: languageRaw && /^[a-z]{2}$/.test(languageRaw) ? languageRaw : undefined,
+  };
 }
 
 function buildHref(base: string, state: BrowseState, patch: Partial<BrowseState>, includeType: boolean) {
@@ -40,6 +69,11 @@ function buildHref(base: string, state: BrowseState, patch: Partial<BrowseState>
   if (includeType) qs.set("type", next.type);
   if (next.sort !== "popular") qs.set("sort", next.sort);
   if (next.genre) qs.set("genre", String(next.genre));
+  if (next.yearFrom) qs.set("from", String(next.yearFrom));
+  if (next.yearTo) qs.set("to", String(next.yearTo));
+  if (next.minRating) qs.set("rating", String(next.minRating));
+  if (next.runtime) qs.set("runtime", next.runtime);
+  if (next.language) qs.set("lang", next.language);
   if (next.page > 1) qs.set("page", String(next.page));
   const s = qs.toString();
   return s ? `${base}?${s}` : base;
@@ -82,7 +116,20 @@ export async function BrowseResults({
   anime?: boolean;
   showTypeToggle?: boolean;
 }) {
-  const data = await discover({ type: state.type, sort: state.sort, genre: state.genre, page: state.page, anime });
+  const [minRuntime, maxRuntime] = state.runtime ? RUNTIMES[state.type][state.runtime] : [];
+  const data = await discover({
+    type: state.type,
+    sort: state.sort,
+    genre: state.genre,
+    page: state.page,
+    anime,
+    yearFrom: state.yearFrom,
+    yearTo: state.yearTo,
+    minRating: state.minRating,
+    minRuntime,
+    maxRuntime,
+    language: anime ? undefined : state.language,
+  });
   const genres = genresFor(state.type).filter((g) => !(anime && g.id === 16));
 
   return (
@@ -119,6 +166,18 @@ export async function BrowseResults({
             </Chip>
           ))}
         </div>
+        <AdvancedFilters
+          type={state.type}
+          showLanguage={!anime}
+          values={{
+            from: state.yearFrom,
+            to: state.yearTo,
+            rating: state.minRating,
+            runtime: state.runtime,
+            lang: state.language,
+          }}
+          totalResults={data.totalResults}
+        />
       </div>
 
       {data.results.length === 0 ? (

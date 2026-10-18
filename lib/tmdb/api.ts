@@ -19,14 +19,19 @@ import type {
   MediaType,
   Paged,
   Review,
+  PersonCredit,
+  PersonDetails,
+  Provider,
+  SeasonDetails,
   SeasonRatings,
+  WatchProviders,
 } from "./types";
 
 /* ------------------------------------------------------------------ */
 /* Raw TMDb shapes (only the fields we use)                            */
 /* ------------------------------------------------------------------ */
 
-interface RawMedia {
+export interface RawMedia {
   id: number;
   media_type?: string;
   title?: string;
@@ -43,7 +48,7 @@ interface RawMedia {
   original_language?: string;
 }
 
-interface RawPaged {
+export interface RawPaged {
   page: number;
   total_pages: number;
   total_results: number;
@@ -87,11 +92,11 @@ function toSummary(raw: RawMedia, fallbackType?: MediaType): MediaSummary | null
   };
 }
 
-function toSummaries(results: RawMedia[], fallbackType?: MediaType): MediaSummary[] {
+export function toSummaries(results: RawMedia[], fallbackType?: MediaType): MediaSummary[] {
   return results.map((r) => toSummary(r, fallbackType)).filter((m): m is MediaSummary => m !== null);
 }
 
-function toPaged(raw: RawPaged, fallbackType?: MediaType): Paged<MediaSummary> {
+export function toPaged(raw: RawPaged, fallbackType?: MediaType): Paged<MediaSummary> {
   return {
     page: raw.page,
     // TMDb refuses pages beyond 500.
@@ -192,16 +197,27 @@ export interface DiscoverOptions {
   sort?: SortKey;
   page?: number;
   anime?: boolean;
+  yearFrom?: number;
+  yearTo?: number;
+  minRating?: number;
+  minRuntime?: number;
+  maxRuntime?: number;
+  language?: string;
 }
 
 export async function discover(opts: DiscoverOptions): Promise<Paged<MediaSummary>> {
   "use cache";
   cacheLife("hours");
-  const { type, genre, sort = "popular", page = 1, anime = false } = opts;
+  const { type, genre, sort = "popular", page = 1, anime = false, yearFrom, yearTo, minRating, minRuntime, maxRuntime, language } =
+    opts;
 
   if (isDemoMode()) {
     let pool = DEMO_ALL.filter((m) => m.mediaType === type && isAnime(m) === anime);
     if (genre) pool = pool.filter((m) => m.genreIds.includes(genre));
+    if (yearFrom) pool = pool.filter((m) => Number(m.date?.slice(0, 4)) >= yearFrom);
+    if (yearTo) pool = pool.filter((m) => Number(m.date?.slice(0, 4)) <= yearTo);
+    if (minRating) pool = pool.filter((m) => m.voteAverage >= minRating);
+    if (language) pool = pool.filter((m) => m.originalLanguage === language);
     if (sort === "top") pool = [...pool].sort((a, b) => b.voteAverage - a.voteAverage);
     if (sort === "newest") pool = [...pool].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
     return demoPaged(pool);
@@ -215,10 +231,15 @@ export async function discover(opts: DiscoverOptions): Promise<Paged<MediaSummar
     include_adult: "false",
     page,
     with_genres: genres || undefined,
-    with_original_language: anime ? "ja" : undefined,
+    with_original_language: anime ? "ja" : language || undefined,
     sort_by: sort === "top" ? "vote_average.desc" : sort === "newest" ? `${dateField}.desc` : "popularity.desc",
-    "vote_count.gte": sort === "top" ? 300 : sort === "newest" ? 20 : undefined,
-    [`${dateField}.lte`]: sort === "newest" ? today : undefined,
+    // A rating floor is meaningless on titles with a handful of votes.
+    "vote_count.gte": sort === "top" ? 300 : minRating ? 100 : sort === "newest" ? 20 : undefined,
+    "vote_average.gte": minRating || undefined,
+    "with_runtime.gte": minRuntime || undefined,
+    "with_runtime.lte": maxRuntime || undefined,
+    [`${dateField}.gte`]: yearFrom ? `${yearFrom}-01-01` : undefined,
+    [`${dateField}.lte`]: yearTo ? `${yearTo}-12-31` : sort === "newest" ? today : undefined,
   };
   const raw = await tmdbFetch<RawPaged>(`/discover/${type}`, params);
   return toPaged(raw, type);
@@ -406,4 +427,160 @@ export async function getSeasonRatings(id: number, seasonNumbers: number[]): Pro
     }
   }
   return seasons.sort((a, b) => a.seasonNumber - b.seasonNumber);
+}
+
+/* ------------------------------------------------------------------ */
+/* Seasons                                                             */
+/* ------------------------------------------------------------------ */
+
+function toEpisode(e: RawEpisode): Episode {
+  return {
+    episodeNumber: e.episode_number,
+    name: e.name,
+    airDate: e.air_date,
+    voteAverage: e.vote_average,
+    voteCount: e.vote_count,
+    overview: e.overview,
+    stillPath: e.still_path,
+  };
+}
+
+export async function getSeason(id: number, seasonNumber: number): Promise<SeasonDetails | null> {
+  "use cache";
+  cacheLife("days");
+  if (isDemoMode()) {
+    const s = demoSeasons(id).find((x) => x.seasonNumber === seasonNumber);
+    return s ? { ...s, overview: "", airDate: null, posterPath: null } : null;
+  }
+  try {
+    const raw = await tmdbFetch<RawSeason & { overview?: string }>(`/tv/${id}/season/${seasonNumber}`);
+    return {
+      seasonNumber: raw.season_number,
+      name: raw.name,
+      overview: raw.overview ?? "",
+      airDate: raw.air_date,
+      posterPath: raw.poster_path,
+      episodes: (raw.episodes ?? []).map(toEpisode),
+    };
+  } catch (err) {
+    if (err instanceof TmdbError && err.status === 404) return null;
+    throw err;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Where to watch                                                      */
+/* ------------------------------------------------------------------ */
+
+interface RawProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string | null;
+  display_priority: number;
+}
+
+interface RawRegion {
+  link: string;
+  flatrate?: RawProvider[];
+  free?: RawProvider[];
+  ads?: RawProvider[];
+  rent?: RawProvider[];
+  buy?: RawProvider[];
+}
+
+function toProviders(list: RawProvider[] | undefined): Provider[] {
+  return (list ?? [])
+    .sort((a, b) => a.display_priority - b.display_priority)
+    .map((p) => ({ id: p.provider_id, name: p.provider_name, logoPath: p.logo_path }));
+}
+
+export async function getWatchProviders(type: MediaType, id: number): Promise<WatchProviders> {
+  "use cache";
+  cacheLife("days");
+  if (isDemoMode()) return {};
+  const raw = await tmdbFetch<{ results: Record<string, RawRegion> }>(`/${type}/${id}/watch/providers`);
+  const out: WatchProviders = {};
+  for (const [region, r] of Object.entries(raw.results ?? {})) {
+    out[region] = {
+      link: r.link,
+      stream: toProviders(r.flatrate),
+      free: toProviders([...(r.free ?? []), ...(r.ads ?? [])]),
+      rent: toProviders(r.rent),
+      buy: toProviders(r.buy),
+    };
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* People                                                              */
+/* ------------------------------------------------------------------ */
+
+interface RawCredit extends RawMedia {
+  character?: string;
+  job?: string;
+  department?: string;
+  popularity?: number;
+}
+
+interface RawPerson {
+  id: number;
+  name: string;
+  biography: string;
+  profile_path: string | null;
+  known_for_department: string;
+  birthday: string | null;
+  deathday: string | null;
+  place_of_birth: string | null;
+  imdb_id: string | null;
+  combined_credits?: { cast: RawCredit[]; crew: RawCredit[] };
+}
+
+export async function getPerson(id: number): Promise<PersonDetails | null> {
+  "use cache";
+  cacheLife("days");
+  if (isDemoMode()) return null;
+
+  let raw: RawPerson;
+  try {
+    raw = await tmdbFetch<RawPerson>(`/person/${id}`, { append_to_response: "combined_credits" });
+  } catch (err) {
+    if (err instanceof TmdbError && err.status === 404) return null;
+    throw err;
+  }
+
+  // Merge cast & crew, keeping one entry per title (first role wins), most popular first.
+  const seen = new Map<string, { credit: PersonCredit; popularity: number }>();
+  const add = (c: RawCredit, role: string, department: string) => {
+    const summary = toSummary(c);
+    if (!summary) return;
+    const key = `${summary.mediaType}-${summary.id}`;
+    const existing = seen.get(key);
+    if (existing) {
+      if (!existing.credit.role.includes(role) && role) existing.credit.role += `, ${role}`;
+      return;
+    }
+    seen.set(key, { credit: { ...summary, role, department }, popularity: c.popularity ?? 0 });
+  };
+  raw.combined_credits?.cast.forEach((c) => add(c, c.character ?? "", "Acting"));
+  raw.combined_credits?.crew.forEach((c) => add(c, c.job ?? "", c.department ?? "Crew"));
+
+  const credits = [...seen.values()]
+    // Hide talk-show and award-show appearances with no votes.
+    .filter((x) => x.credit.voteCount > 0)
+    .sort((a, b) => b.popularity - a.popularity)
+    .map((x) => x.credit);
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    biography: raw.biography,
+    profilePath: raw.profile_path,
+    knownFor: raw.known_for_department,
+    birthday: raw.birthday,
+    deathday: raw.deathday,
+    placeOfBirth: raw.place_of_birth,
+    imdbId: raw.imdb_id,
+    credits,
+  };
 }

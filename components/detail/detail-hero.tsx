@@ -1,8 +1,10 @@
-import { Play, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { ExternalLink, GitCompareArrows } from "lucide-react";
 import type { MediaDetails } from "@/lib/tmdb/types";
 import { formatRuntime, typeLabel, yearOf } from "@/lib/format";
 import { Backdrop, Poster } from "../poster";
 import { ScoreRing } from "../rating-pill";
+import { TrailerButton } from "./trailer-button";
 
 export function DetailHero({ media }: { media: MediaDetails }) {
   const facts = [
@@ -70,15 +72,14 @@ export function DetailHero({ media }: { media: MediaDetails }) {
           <p className="mt-6 max-w-3xl leading-relaxed text-foreground/80">{media.overview}</p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            {media.trailerKey && (
-              <a
-                href={`https://www.youtube.com/watch?v=${media.trailerKey}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition hover:bg-white"
+            {media.trailerKey && <TrailerButton trailerKey={media.trailerKey} title={media.title} />}
+            {media.mediaType === "tv" && (
+              <Link
+                href={`/compare?a=${media.id}`}
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-medium backdrop-blur transition hover:bg-white/10"
               >
-                <Play className="size-4" fill="currentColor" /> Watch trailer
-              </a>
+                <GitCompareArrows className="size-4" /> Compare
+              </Link>
             )}
             {media.imdbId && (
               <a
