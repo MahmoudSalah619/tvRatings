@@ -34,9 +34,10 @@ export function Hero({ items }: { items: MediaSummary[] }) {
       <div key={`${current.mediaType}-${current.id}`} className="absolute inset-0 -z-10 animate-ken-burns">
         <Backdrop id={current.id} title={current.title} path={current.backdropPath} priority />
       </div>
-      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-background via-background/60 to-background/10" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-background/90 via-background/30 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-background to-transparent" />
+      {/* Scrims only where text sits (left + bottom) so the artwork stays visible */}
+      <div className="absolute inset-x-0 top-0 -z-10 h-28 bg-gradient-to-b from-background/70 to-transparent" />
+      <div className="absolute inset-y-0 left-0 -z-10 w-full bg-gradient-to-r from-background/85 via-background/25 to-transparent sm:w-3/4" />
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-[55%] bg-gradient-to-t from-background via-background/50 to-transparent" />
 
       <div className="mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 sm:pb-20">
         <div key={`copy-${current.mediaType}-${current.id}`} className="max-w-2xl">
